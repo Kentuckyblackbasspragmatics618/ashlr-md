@@ -28,6 +28,7 @@ leaks data off-device without explicit consent. Quality over scope, every time.
 - **⌘K command palette** — fuzzy access to every action + recent files
 - **Agent Activity drawer (⌘B)** — watch an agent's output folder, open new docs live
 - **Outline navigation (⌘⇧O)** — auto table-of-contents with scrollspy
+- **Multiple documents in tabs** — open many docs at once; tab bar appears only with 2+ open (`⌘⇧]` / `⌘⇧[` / `⌘W`)
 - Agent hand-off: `mdopen` CLI · `mdopener://` scheme · **MCP server** (one-click setup)
 - Smart agent output: callouts, interactive checkboxes, plan/diff/multi-file detection with badges
 - Three themes, Settings, custom icon, CI + signed-release pipeline, landing site
@@ -44,7 +45,7 @@ leaks data off-device without explicit consent. Quality over scope, every time.
 **Make agent output come alive (the differentiator)**
 - [ ] Run buttons for more than shell (with sandboxing); inline results
 - [ ] Live diff review UI for ` ```diff ` blocks (apply / copy hunks)
-- [ ] Multi-file output → tabbed file viewer; "save all to disk"
+- [x] Multi-document **tabs** (⌘⇧] / ⌘⇧[ / ⌘W) — _next: "save all to disk" for multi-file agent output_
 - [ ] Plan progress tracking that syncs checkboxes ↔ the agent's task list
 - [ ] Recognize and pretty-render common agent doc schemas (plans, reviews, specs)
 

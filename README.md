@@ -60,6 +60,9 @@ especially for non-technical people. Ashlr MD does exactly that, on every platfo
   in agent `.md` files."
 - **Outline navigation (⌘⇧O)** — an auto table-of-contents with scrollspy for
   long docs.
+- **Tabs** — open several documents at once; the tab bar appears only when more
+  than one is open, so the single-file view stays clean. `⌘⇧]` / `⌘⇧[` to switch,
+  `⌘W` to close.
 - **Agent-native** — `mdopen file.md`, the `mdopener://` URL scheme, and an **MCP
   server** so Claude Code / Codex / Cursor can open, read, edit, and export the
   live doc. One-click MCP setup in Settings.
@@ -98,6 +101,8 @@ Shown with ⌘ on macOS — use **Ctrl** on Windows & Linux.
 | Save | `⌘S` |
 | Export | `⌘E` |
 | Read / Edit / Source view | `⌘1` / `⌘2` / `⌘3` |
+| Next / Previous tab | `⌘⇧]` / `⌘⇧[` |
+| Close tab | `⌘W` |
 | Agent activity drawer | `⌘B` |
 | Outline | `⌘⇧O` |
 | Settings | `⌘,` |
