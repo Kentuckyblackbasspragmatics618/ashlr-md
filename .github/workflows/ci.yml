@@ -47,6 +47,17 @@ jobs:
       - name: Frontend build
         run: bunx vite build
 
+      # tauri-build validates that bundle.resources paths exist at compile
+      # time. The check job only type-checks Rust (it doesn't bundle), so
+      # create empty stand-ins for the sidecars the macOS config references.
+      - name: Stub sidecar binaries (resource existence check)
+        run: |
+          mkdir -p src-tauri/target/release
+          touch src-tauri/target/release/mdopen \
+                src-tauri/target/release/mdopener-mcp \
+                src-tauri/target/release/mdopener-afm \
+                src-tauri/target/release/mdopener-setdefault
+
       - name: Rust check (workspace)
         run: cargo check --workspace --manifest-path src-tauri/Cargo.toml
 
@@ -86,6 +97,15 @@ jobs:
             libayatana-appindicator3-dev \
             librsvg2-dev \
             patchelf
+
+      # tauri-build validates bundle.resources existence at compile time; the
+      # Linux config references only the two Rust sidecars. Stub them so the
+      # type-check proceeds without a full sidecar build.
+      - name: Stub sidecar binaries (resource existence check)
+        run: |
+          mkdir -p src-tauri/target/release
+          touch src-tauri/target/release/mdopen \
+                src-tauri/target/release/mdopener-mcp
 
       - name: Rust check (workspace)
         run: cargo check --workspace --manifest-path src-tauri/Cargo.toml
