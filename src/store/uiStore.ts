@@ -7,6 +7,10 @@ interface UiState {
   settingsOpen: boolean;
   openSettings: () => void;
   closeSettings: () => void;
+  commandPaletteOpen: boolean;
+  openCommandPalette: () => void;
+  closeCommandPalette: () => void;
+  toggleCommandPalette: () => void;
 }
 
 /**
@@ -20,4 +24,9 @@ export const useUiStore = create<UiState>((set) => ({
   settingsOpen: false,
   openSettings: () => set({ settingsOpen: true }),
   closeSettings: () => set({ settingsOpen: false }),
+  commandPaletteOpen: false,
+  openCommandPalette: () => set({ commandPaletteOpen: true }),
+  closeCommandPalette: () => set({ commandPaletteOpen: false }),
+  toggleCommandPalette: () =>
+    set((s) => ({ commandPaletteOpen: !s.commandPaletteOpen })),
 }));

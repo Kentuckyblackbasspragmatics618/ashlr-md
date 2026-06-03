@@ -3,16 +3,16 @@ import { listen } from "@tauri-apps/api/event";
 import { getCurrentWebview } from "@tauri-apps/api/webview";
 import { useEffect, useState } from "react";
 import { Shell } from "./components/layout/Shell";
-import { pickAndOpen } from "./lib/openFile";
+import { getShortcutCommands } from "./lib/commands";
+import { matchShortcut } from "./lib/keymap";
 import { checkForUpdates } from "./lib/updater";
 import { useMcpBridge } from "./mcp/bridge";
-import { useAIStore } from "./store/aiStore";
 import { useDocumentStore } from "./store/documentStore";
 import { useSettingsStore } from "./store/settingsStore";
-import { useUiStore } from "./store/uiStore";
 import "./styles/themes.css";
 import "./styles/global.css";
 import "./styles/markdown.css";
+import "./styles/command-palette.css";
 
 const MD_EXT = /\.(md|markdown|mdown|mkd|mdx)$/i;
 
@@ -71,34 +71,19 @@ export default function App() {
     return () => unlisten?.();
   }, [openPath]);
 
-  // ⌘O / Ctrl+O to open.
+  // Global keyboard shortcuts — driven entirely by the command registry so the
+  // keymap is a single source of truth (see src/lib/commands.ts). Each command
+  // carries its canonical shortcut string; we match the event against the live
+  // list and run the first available command whose shortcut matches.
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      const mod = e.metaKey || e.ctrlKey;
-      if (mod && e.key.toLowerCase() === "o") {
-        e.preventDefault();
-        pickAndOpen();
-      } else if (mod && e.shiftKey && e.key.toLowerCase() === "l") {
-        e.preventDefault();
-        useSettingsStore.getState().cycleTheme();
-      } else if (mod && e.key.toLowerCase() === "s") {
-        e.preventDefault();
-        useDocumentStore.getState().save();
-      } else if (mod && (e.key === "1" || e.key === "2" || e.key === "3")) {
-        e.preventDefault();
-        const mode = { "1": "read", "2": "edit", "3": "source" } as const;
-        useDocumentStore.getState().setViewMode(mode[e.key]);
-      } else if (mod && e.key.toLowerCase() === "k") {
-        e.preventDefault();
-        useAIStore.getState().toggle();
-      } else if (mod && e.key.toLowerCase() === "e") {
-        e.preventDefault();
-        if (useDocumentStore.getState().path) {
-          useUiStore.getState().openExport();
+      for (const cmd of getShortcutCommands()) {
+        if (cmd.shortcut && matchShortcut(e, cmd.shortcut)) {
+          if (cmd.when && !cmd.when()) return; // shortcut owned but unavailable
+          e.preventDefault();
+          cmd.run();
+          return;
         }
-      } else if (mod && e.key === ",") {
-        e.preventDefault();
-        useUiStore.getState().openSettings();
       }
     }
     window.addEventListener("keydown", onKey);

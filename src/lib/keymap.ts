@@ -1,0 +1,112 @@
+/**
+ * keymap.ts — tiny keyboard-shortcut engine.
+ *
+ * Shortcuts are written as lowercase, plus-delimited strings, e.g.
+ *   "mod+k"        → ⌘K (mac) / Ctrl+K (other)
+ *   "mod+shift+l"  → ⌘⇧L
+ *   "mod+1"        → ⌘1
+ *
+ * `mod` resolves to the platform-conventional command modifier: ⌘ (metaKey)
+ * on macOS, Ctrl elsewhere. This is the single place that knows how a
+ * shortcut string maps to a real KeyboardEvent, so the command registry and
+ * the global key handler stay in sync.
+ */
+
+const IS_MAC =
+  typeof navigator !== "undefined" &&
+  /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent || "");
+
+interface ParsedShortcut {
+  /** Requires the platform command modifier (⌘ on mac, Ctrl elsewhere). */
+  mod: boolean;
+  shift: boolean;
+  alt: boolean;
+  /** The bare (lowercased) key, e.g. "k", "1", ",". */
+  key: string;
+}
+
+const parseCache = new Map<string, ParsedShortcut>();
+
+/** Parse a shortcut string like "mod+shift+l" into its component flags. */
+function parse(shortcut: string): ParsedShortcut {
+  const cached = parseCache.get(shortcut);
+  if (cached) return cached;
+
+  const parsed: ParsedShortcut = {
+    mod: false,
+    shift: false,
+    alt: false,
+    key: "",
+  };
+  for (const raw of shortcut.toLowerCase().split("+")) {
+    const part = raw.trim();
+    if (part === "mod") parsed.mod = true;
+    else if (part === "shift") parsed.shift = true;
+    else if (part === "alt" || part === "option" || part === "opt") parsed.alt = true;
+    else if (part) parsed.key = part;
+  }
+  parseCache.set(shortcut, parsed);
+  return parsed;
+}
+
+/**
+ * True when `e` matches `shortcut`. Modifier matching is exact for mod / shift
+ * / alt so that e.g. "mod+l" does not also fire on "mod+shift+l".
+ */
+export function matchShortcut(e: KeyboardEvent, shortcut: string): boolean {
+  const s = parse(shortcut);
+  const modActive = IS_MAC ? e.metaKey : e.ctrlKey;
+  // The non-command modifier must NOT be held, otherwise "mod+k" would also
+  // match Ctrl+K on a mac (where Ctrl is a distinct, meaningful modifier).
+  const otherMod = IS_MAC ? e.ctrlKey : e.metaKey;
+
+  if (s.mod !== modActive) return false;
+  if (s.mod && otherMod) return false;
+  if (s.shift !== e.shiftKey) return false;
+  if (s.alt !== e.altKey) return false;
+
+  return e.key.toLowerCase() === s.key;
+}
+
+/**
+ * Format a shortcut for display, e.g.:
+ *   mac:   "mod+shift+l" → "⌘⇧L"
+ *   other: "mod+shift+l" → "Ctrl+Shift+L"
+ */
+export function formatShortcut(shortcut: string): string {
+  const s = parse(shortcut);
+  const keyLabel = formatKey(s.key);
+
+  if (IS_MAC) {
+    let out = "";
+    if (s.alt) out += "⌥";
+    if (s.shift) out += "⇧";
+    if (s.mod) out += "⌘";
+    return out + keyLabel;
+  }
+
+  const parts: string[] = [];
+  if (s.mod) parts.push("Ctrl");
+  if (s.alt) parts.push("Alt");
+  if (s.shift) parts.push("Shift");
+  parts.push(keyLabel);
+  return parts.join("+");
+}
+
+/** Human-readable label for a single key token. */
+function formatKey(key: string): string {
+  switch (key) {
+    case ",":
+      return ",";
+    case "arrowup":
+      return "↑";
+    case "arrowdown":
+      return "↓";
+    case "enter":
+      return "↵";
+    case "escape":
+      return "Esc";
+    default:
+      return key.length === 1 ? key.toUpperCase() : key;
+  }
+}

@@ -4,6 +4,7 @@ import { useDocumentStore } from "../../store/documentStore";
 import { useUiStore } from "../../store/uiStore";
 import { AISidebar } from "../ai/AISidebar";
 import { SelectionPopover } from "../ai/SelectionPopover";
+import { CommandPalette } from "../CommandPalette";
 import { DefaultHandlerBanner } from "../DefaultHandlerBanner";
 import { MarkdownEditor } from "../editor/MarkdownEditor";
 import { SourceEditor } from "../editor/SourceEditor";
@@ -79,6 +80,7 @@ export function Shell({ dragOver }: ShellProps) {
       <SelectionPopover />
       {exportOpen && <ExportDialog />}
       {settingsOpen && <SettingsPanel />}
+      <CommandPalette />
     </div>
   );
 }

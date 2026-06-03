@@ -1,0 +1,83 @@
+# Maintainer: ashlrai <https://github.com/ashlrai>
+# AUR package: ashlr-md
+#
+# ---------------------------------------------------------------------------
+# OVERVIEW
+#   This PKGBUILD installs Ashlr MD on Arch Linux / Arch-based distros
+#   (Manjaro, EndeavourOS, etc.) by repackaging the upstream Debian (.deb)
+#   artifact produced by tauri-action in the GitHub Actions release workflow.
+#
+#   We use the .deb rather than the AppImage because the .deb ships a proper
+#   /usr/share/applications entry and icon hierarchy, making xdg-mime
+#   registration automatic.
+#
+# PLACEHOLDER VALUES — update after each release:
+#   <VERSION>       e.g. 0.2.0
+#   <SHA256_DEB>    sha256sum ashlr-md_<VERSION>_amd64.deb
+#
+# ARTIFACT NAME (produced by tauri-action)
+#   ashlr-md_<VERSION>_amd64.deb
+#
+# HOW TO UPDATE FOR A NEW RELEASE
+#   1. Set pkgver=<new version>
+#   2. Update sha256sums with the new .deb checksum:
+#        sha256sum ashlr-md_<VERSION>_amd64.deb
+#   3. Run `updpkgsums` to auto-refresh (requires wget/curl).
+#   4. Test locally: makepkg -si
+#   5. Push to AUR: git push aur main
+#
+# SUBMITTING / UPDATING ON AUR
+#   git clone ssh://aur@aur.archlinux.org/ashlr-md.git
+#   cp PKGBUILD ashlr-md/
+#   cd ashlr-md && makepkg --printsrcinfo > .SRCINFO
+#   git add PKGBUILD .SRCINFO && git commit -m "Update to <VERSION>"
+#   git push
+# ---------------------------------------------------------------------------
+
+pkgname=ashlr-md
+pkgver=<VERSION>
+pkgrel=1
+pkgdesc="AI-native Markdown viewer, editor, and exporter"
+arch=('x86_64')
+url="https://github.com/ashlrai/ashlr-md"
+license=('MIT')
+depends=(
+    'webkit2gtk-4.1'          # Tauri 2 WebView runtime
+    'gtk3'
+    'libayatana-appindicator' # system tray support (optional but expected)
+)
+optdepends=(
+    'xdg-utils: xdg-open / default-app registration'
+)
+provides=('ashlr-md')
+conflicts=('ashlr-md-appimage')  # mutual exclusion with the AppImage variant
+
+# Source: repackage the upstream .deb from GitHub Releases.
+# The .deb is a standard ar archive; bsdtar (part of libarchive) extracts it.
+source=("${pkgname}_${pkgver}_amd64.deb::https://github.com/ashlrai/ashlr-md/releases/download/v${pkgver}/ashlr-md_${pkgver}_amd64.deb")
+sha256sums=('<SHA256_DEB>')
+
+# No build step — we extract the pre-built deb.
+noextract=("${pkgname}_${pkgver}_amd64.deb")
+
+package() {
+    # Extract the .deb (ar archive → data.tar.* → actual files)
+    cd "${srcdir}"
+    bsdtar -xf "${pkgname}_${pkgver}_amd64.deb"
+    # data.tar may be zstd, xz, or gz depending on the Tauri bundler version
+    bsdtar -xf data.tar.* -C "${pkgdir}"
+
+    # Install the LICENSE file
+    install -Dm644 \
+        "${pkgdir}/usr/share/doc/${pkgname}/copyright" \
+        "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE" \
+        2>/dev/null || true
+
+    # Ensure the .desktop file is present (Tauri deb bundles it automatically)
+    # Path inside the deb: /usr/share/applications/app.mdopener.desktop.desktop
+    # If the Tauri bundler uses a different name, adjust the path below.
+
+    # Ensure the binary is executable
+    chmod +x "${pkgdir}/usr/bin/ashlr-md" 2>/dev/null || \
+    chmod +x "${pkgdir}/usr/bin/Ashlr MD" 2>/dev/null || true
+}

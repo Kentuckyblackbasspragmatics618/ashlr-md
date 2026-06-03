@@ -1,290 +1,238 @@
 # Releasing Ashlr MD
 
-This document covers the full release pipeline: icon generation, GitHub Secrets
-configuration, the auto-updater, and the Homebrew cask.
+Complete runbook for cutting a release, managing artifacts, and updating
+downstream distribution channels (Homebrew, winget, AUR).
 
 ---
 
-## 1. Generate the App Icon
+## 1. Pre-release Checklist
 
-The canonical source is `src-tauri/icons/icon.svg`.
-The helper script delegates to Tauri's built-in icon generator:
+Before tagging, complete every item:
+
+- [ ] All CI checks passing on `main`.
+- [ ] Update `version` in **`src-tauri/tauri.conf.json`** (e.g. `"0.2.0"`).
+- [ ] Update `version` in **`src-tauri/Cargo.toml`** `[package]` section to match.
+- [ ] Update `version` in **`package.json`** to match.
+- [ ] Update **`CHANGELOG.md`** — add a `## [X.Y.Z] — YYYY-MM-DD` section.
+- [ ] Run `./scripts/generate-icons.sh` if `src-tauri/icons/icon.svg` changed.
+- [ ] Commit all changes:
+  ```bash
+  git add src-tauri/tauri.conf.json src-tauri/Cargo.toml package.json CHANGELOG.md
+  git commit -m "chore: release vX.Y.Z"
+  ```
+
+---
+
+## 2. Cutting the Tag
 
 ```bash
-# Install deps if you haven't already
-bun install
+git tag vX.Y.Z
+git push origin vX.Y.Z
+```
 
-# Run the icon generator (reads icon.svg → writes all PNGs, .icns, .ico)
+This triggers `.github/workflows/release.yml`, which fans out across the full
+build matrix and creates a **draft** GitHub Release.
+
+> **Pre-release tags** — any tag containing a hyphen (`v0.2.0-beta.1`) sets
+> `prerelease: true` automatically. Use this for testing the pipeline without
+> shipping to stable update channels.
+
+---
+
+## 3. What the Workflow Produces
+
+| Platform | Runner | Artifacts |
+|---|---|---|
+| macOS arm64 | `macos-14` | `Ashlr.MD_X.Y.Z_aarch64.dmg` + updater `.sig` |
+| macOS x86_64 | `macos-13` | `Ashlr.MD_X.Y.Z_x64.dmg` + updater `.sig` |
+| Linux x86_64 | `ubuntu-22.04` | `ashlr-md_X.Y.Z_amd64.deb`, `Ashlr.MD_X.Y.Z_amd64.AppImage` + `.sig` files |
+| Windows x86_64 | `windows-latest` | `Ashlr.MD_X.Y.Z_x64-setup.exe` (NSIS), `Ashlr.MD_X.Y.Z_x64_en-US.msi` + `.sig` files |
+
+Each leg uploads a platform-specific entry to the Tauri updater manifest.
+After all four legs complete, `latest.json` in the release contains aggregated
+entries for every platform — this is what `tauri-plugin-updater` polls.
+
+### Sidecar binaries per platform
+
+| Binary | macOS | Linux | Windows |
+|---|---|---|---|
+| `mdopen` | yes | yes | yes (`.exe`) |
+| `mdopener-mcp` | yes | yes | yes (`.exe`) |
+| `mdopener-afm` (Swift) | yes | — | — |
+| `mdopener-setdefault` (Swift) | yes | — | — |
+
+> **macOS AFM sidecar risk:** `mdopener-afm` requires Xcode 26 / Swift 6.2+
+> (macOS 26 SDK). The workflow selects the latest available Xcode via
+> `maxim-lobanov/setup-xcode@v1`. Until GitHub-hosted runners carry Xcode 26,
+> this sidecar may build against an older SDK or fail. See the comment block
+> in `.github/workflows/release.yml` (the "Select latest Xcode" step) for
+> mitigation steps. All other bundle artifacts are unaffected.
+
+---
+
+## 4. Publishing the GitHub Release
+
+1. Go to **github.com/ashlrai/ashlr-md/releases** and open the draft.
+2. Verify all expected artifacts are attached (see table above).
+3. Review the release notes; paste the relevant `CHANGELOG.md` section.
+4. Click **Publish release**.
+
+Publishing makes `latest.json` live — existing installs will prompt to update
+on next launch.
+
+---
+
+## 5. Post-release: Update the Homebrew Cask
+
+The canonical cask template lives at `packaging/homebrew/ashlr-md.rb`.
+The tap repo is **github.com/ashlrai/homebrew-ashlr-md** — create it if it
+doesn't exist yet; place the cask at `Casks/ashlr-md.rb` in that repo.
+
+```bash
+# 1. Download the new DMG and compute its SHA-256
+curl -L \
+  "https://github.com/ashlrai/ashlr-md/releases/download/vX.Y.Z/Ashlr.MD_X.Y.Z_aarch64.dmg" \
+  -o Ashlr.MD_X.Y.Z_aarch64.dmg
+shasum -a 256 Ashlr.MD_X.Y.Z_aarch64.dmg
+
+# 2. Clone the tap repo and update the cask
+git clone https://github.com/ashlrai/homebrew-ashlr-md.git
+cd homebrew-ashlr-md
+
+# Edit Casks/ashlr-md.rb:
+#   version "X.Y.Z"
+#   sha256  "<output of shasum above>"
+
+# 3. Commit and push
+git add Casks/ashlr-md.rb
+git commit -m "Cask update: ashlr-md X.Y.Z"
+git push
+```
+
+Users install / upgrade with:
+```bash
+brew tap ashlrai/ashlr-md
+brew install --cask ashlr-md
+# upgrade:
+brew upgrade --cask ashlr-md
+```
+
+---
+
+## 6. Post-release: Update the winget Manifest
+
+The manifest templates live at `packaging/winget/`.
+
+```bash
+# 1. Download the NSIS installer and compute its SHA-256
+curl -L \
+  "https://github.com/ashlrai/ashlr-md/releases/download/vX.Y.Z/Ashlr.MD_X.Y.Z_x64-setup.exe" \
+  -o Ashlr.MD_X.Y.Z_x64-setup.exe
+
+# macOS/Linux:
+shasum -a 256 Ashlr.MD_X.Y.Z_x64-setup.exe
+# Windows PowerShell:
+# Get-FileHash "Ashlr.MD_X.Y.Z_x64-setup.exe" -Algorithm SHA256
+
+# 2. Copy the three manifests to a versioned folder
+mkdir -p manifests/a/ashlrai/AshlrMD/X.Y.Z
+cp packaging/winget/ashlrai.AshlrMD.*.yaml \
+   manifests/a/ashlrai/AshlrMD/X.Y.Z/
+
+# 3. Replace <VERSION> and <SHA256_NSIS_EXE> in all three files
+
+# 4. Validate locally (requires winget CLI or winget-create)
+winget validate --manifest manifests/a/ashlrai/AshlrMD/X.Y.Z/
+
+# 5. Fork https://github.com/microsoft/winget-pkgs and submit a PR
+#    adding the three manifests under manifests/a/ashlrai/AshlrMD/X.Y.Z/
+```
+
+---
+
+## 7. Post-release: Update the AUR Package
+
+The PKGBUILD template lives at `packaging/linux/aur/PKGBUILD`.
+
+```bash
+# 1. Compute SHA-256 of the .deb
+shasum -a 256 ashlr-md_X.Y.Z_amd64.deb
+
+# 2. Update packaging/linux/aur/PKGBUILD:
+#    pkgver=X.Y.Z
+#    sha256sums=('<output of shasum above>')
+
+# 3. Clone your AUR repo (first time: create the package at aur.archlinux.org)
+git clone ssh://aur@aur.archlinux.org/ashlr-md.git aur-ashlr-md
+cp packaging/linux/aur/PKGBUILD aur-ashlr-md/
+
+# 4. Regenerate .SRCINFO (required by AUR)
+cd aur-ashlr-md
+makepkg --printsrcinfo > .SRCINFO
+
+# 5. Test the build locally
+makepkg -si
+
+# 6. Push to AUR
+git add PKGBUILD .SRCINFO
+git commit -m "Update to X.Y.Z"
+git push
+```
+
+---
+
+## 8. GitHub Secrets Reference
+
+| Secret | Used by | Required? |
+|---|---|---|
+| `GITHUB_TOKEN` | Release creation | Auto-provided |
+| `TAURI_SIGNING_PRIVATE_KEY` | Updater `.sig` files | Yes (all legs) |
+| `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` | Updater `.sig` files | Yes (all legs) |
+| `APPLE_CERTIFICATE` | macOS code signing | Optional (unsigned DMG works) |
+| `APPLE_CERTIFICATE_PASSWORD` | macOS code signing | Optional |
+| `APPLE_SIGNING_IDENTITY` | macOS code signing | Optional |
+| `APPLE_ID` | macOS notarization | Optional |
+| `APPLE_PASSWORD` | macOS notarization | Optional |
+| `APPLE_TEAM_ID` | macOS notarization | Optional |
+
+### Generate the Tauri updater keypair (one-time)
+
+```bash
+bun run tauri signer generate -w ~/.tauri/ashlr-md.key
+# → prints public key (add to tauri.conf.json `plugins.updater.pubkey`)
+# → writes private key to ~/.tauri/ashlr-md.key
+#   base64-encode and add as TAURI_SIGNING_PRIVATE_KEY secret
+```
+
+The updater pubkey is already set in `tauri.conf.json`; the private key must
+be in `TAURI_SIGNING_PRIVATE_KEY` before the first real release.
+
+---
+
+## 9. Icon Generation
+
+The canonical icon source is `src-tauri/icons/icon.svg`.
+
+```bash
+bun install            # if not already installed
 ./scripts/generate-icons.sh
-```
-
-The script will:
-1. Rasterise `icon.svg` → `src-tauri/icons/icon-source.png` (1024 × 1024) using
-   `rsvg-convert` if available, or `sips` on macOS as a fallback.
-2. Call `bun run tauri icon src-tauri/icons/icon-source.png` which generates
-   every required size automatically.
-
-To install `rsvg-convert` (best quality SVG renderer):
-
-```bash
-brew install librsvg
-```
-
-After regenerating, commit the updated icons:
-
-```bash
 git add src-tauri/icons/
 git commit -m "chore: regenerate app icons"
 ```
 
 ---
 
-## 2. Required GitHub Repository Secrets
-
-Add these secrets under **Settings → Secrets and variables → Actions** in your
-GitHub repository.
-
-### Always Required
-
-| Secret | Description |
-|--------|-------------|
-| _(none — `GITHUB_TOKEN` is automatic)_ | GitHub provides this automatically for release creation |
-
-### Tauri Auto-Updater Signing (needed before shipping updates)
-
-| Secret | Description |
-|--------|-------------|
-| `TAURI_SIGNING_PRIVATE_KEY` | Base64-encoded Tauri updater private key (see §4) |
-| `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` | Password for the updater private key (can be empty string if you chose no password) |
-
-### Apple Code Signing (macOS — optional, requires Apple Developer account)
-
-> **Note:** Code signing and notarization require an **Apple Developer Program**
-> membership ($99/year). Without these secrets the workflow still runs and
-> produces a working (unsigned) DMG — perfect for forks and pre-release testing.
-
-| Secret | Description |
-|--------|-------------|
-| `APPLE_CERTIFICATE` | Base64-encoded `.p12` Developer ID Application certificate |
-| `APPLE_CERTIFICATE_PASSWORD` | Password for the `.p12` file |
-| `APPLE_SIGNING_IDENTITY` | Full certificate name, e.g. `Developer ID Application: Your Name (TEAMID)` |
-| `APPLE_ID` | Apple ID email used for notarization (e.g. `you@example.com`) |
-| `APPLE_PASSWORD` | App-specific password generated at appleid.apple.com |
-| `APPLE_TEAM_ID` | 10-character Apple Team ID from developer.apple.com |
-
-#### How to export the certificate as base64
-
-```bash
-# Export from Keychain Access as a .p12, then:
-base64 -i DeveloperIDApplication.p12 | pbcopy
-# Paste as the value of APPLE_CERTIFICATE
-```
-
----
-
-## 3. Triggering a Release
-
-The release workflow fires on any tag matching `v*`.
-
-```bash
-# Bump the version in src-tauri/tauri.conf.json and package.json first, then:
-git tag v0.1.0
-git push origin v0.1.0
-```
-
-The workflow will:
-1. Compile the `mdopen` and `mdopener-mcp` sidecar binaries.
-2. Build the Tauri app (signed + notarized if secrets are present).
-3. Create a **draft** GitHub Release with the DMG attached.
-4. Review the draft, add release notes, then click **Publish**.
-
-### Testing the workflow (unsigned, no Apple account needed)
-
-Push a pre-release tag on a fork or feature branch:
-
-```bash
-git tag v0.1.0-test
-git push origin v0.1.0-test
-```
-
-Because the tag contains a hyphen, `tauri-action` sets `prerelease: true`.
-The workflow will build without signing secrets — verify the DMG is produced
-correctly before wiring up your Apple credentials.
-
----
-
-## 4. Auto-Updater Integration
-
-> **All changes in this section must be made manually.**
-> The code snippets below are provided for reference — do NOT edit the config
-> files directly from this document.
-> These require the `TAURI_SIGNING_PRIVATE_KEY` secret to be set before
-> enabling in production.
-
-### 4a. Generate the Tauri updater signing keypair
-
-Run once per project (keep the private key safe — loss means you can't ship
-signed updates):
-
-```bash
-bun run tauri signer generate -w ~/.tauri/md-opener.key
-```
-
-This prints a **public key** and writes a **private key** file.
-
-- Add the **private key** (the file content) as `TAURI_SIGNING_PRIVATE_KEY` in
-  GitHub Secrets (base64-encode it first if the CLI instructs you to).
-- Add the **public key** to `tauri.conf.json` (see below).
-
-### 4b. tauri.conf.json additions
-
-Add the following inside the top-level JSON object. Replace `YOUR_PUBLIC_KEY`
-with the output of `bun run tauri signer generate`:
-
-```jsonc
-// Inside tauri.conf.json → top-level:
-{
-  // ... existing config ...
-
-  "bundle": {
-    // ... existing bundle config ...
-    "createUpdaterArtifacts": true   // <-- add this line
-  },
-
-  "plugins": {
-    // ... existing plugins (deep-link, etc.) ...
-    "updater": {
-      "active": true,
-      "pubkey": "YOUR_PUBLIC_KEY_HERE",
-      "endpoints": [
-        "https://github.com/OWNER/md-opener/releases/latest/download/latest.json"
-      ],
-      "dialog": true,
-      "windows": {
-        "installMode": "passive"
-      }
-    }
-  }
-}
-```
-
-> Replace `OWNER/md-opener` with your actual GitHub org/user and repo name.
-
-### 4c. Cargo.toml addition
-
-In `src-tauri/Cargo.toml`, add to `[dependencies]`:
-
-```toml
-tauri-plugin-updater = "2"
-```
-
-### 4d. lib.rs addition
-
-In `src-tauri/src/lib.rs`, register the updater plugin in the builder chain:
-
-```rust
-tauri::Builder::default()
-    // ... existing plugins ...
-    .plugin(tauri_plugin_updater::Builder::new().build())
-    // ...
-```
-
-### 4e. JS/TS package addition
-
-```bash
-bun add @tauri-apps/plugin-updater
-```
-
-Then import and use in your frontend where you want to offer update checks:
-
-```ts
-import { check } from "@tauri-apps/plugin-updater";
-import { relaunch } from "@tauri-apps/plugin-process";
-
-export async function checkForUpdates() {
-  const update = await check();
-  if (update?.available) {
-    await update.downloadAndInstall();
-    await relaunch();
-  }
-}
-```
-
----
-
-## 5. Homebrew Cask (macOS only)
-
-A cask template is at `docs/homebrew/md-opener.rb`.
-
-Once a signed, notarized release is published:
-1. Update `version`, `sha256`, and the `url` in the cask file.
-2. Submit a PR to [homebrew-cask](https://github.com/Homebrew/homebrew-cask)
-   or maintain your own tap (`homebrew-tap` repo).
-
-To get the SHA256 of a published DMG:
-
-```bash
-curl -L https://github.com/OWNER/md-opener/releases/download/vX.Y.Z/MD.Opener_X.Y.Z_aarch64.dmg \
-  | shasum -a 256
-```
-
----
-
-
----
-
-## 6. Windows Release (NSIS / MSI)
-
-The GitHub Actions workflow produces two Windows artifacts:
-- `Ashlr.MD_X.Y.Z_x64-setup.exe` — NSIS installer (recommended)
-- `Ashlr.MD_X.Y.Z_x64_en-US.msi` — MSI package
-
-### Code signing (optional)
-Windows code signing requires an EV or OV certificate. Without it, users see a
-Windows Defender SmartScreen warning. To dismiss: "More info → Run anyway".
-To sign, add these secrets to your GitHub repo:
-
-| Secret | Description |
-|--------|-------------|
-| `WINDOWS_CERTIFICATE` | Base64-encoded `.pfx` code-signing certificate |
-| `WINDOWS_CERTIFICATE_PASSWORD` | Password for the `.pfx` file |
-
-### Release checklist additions (Windows)
-- [ ] Verify `.exe` and `.msi` open and install correctly on a Windows machine
-- [ ] Note SmartScreen behaviour in release notes until signing is set up
-
----
-
-## 7. Linux Release (.deb / .AppImage)
-
-The workflow produces:
-- `ashlr-md_X.Y.Z_amd64.deb` — Debian/Ubuntu package
-- `Ashlr.MD_X.Y.Z_amd64.AppImage` — portable, runs on most Linux distros
-
-Both ship **unsigned** (no Linux code-signing infrastructure is set up).
-
-### Install instructions for release notes
-```bash
-# .deb
-sudo dpkg -i ashlr-md_X.Y.Z_amd64.deb
-
-# AppImage
-chmod +x Ashlr.MD_X.Y.Z_amd64.AppImage
-./Ashlr.MD_X.Y.Z_amd64.AppImage
-```
-
-### Release checklist additions (Linux)
-- [ ] Verify `.deb` installs and registers `xdg-mime` association correctly
-- [ ] Verify `.AppImage` runs on a clean Ubuntu/Fedora VM
-- [ ] Confirm `mdopen` CLI lands in `/usr/bin` (`.deb`) or alongside the AppImage
-
-## 8. Checklist for Each Release
-
-- [ ] Update `version` in `src-tauri/tauri.conf.json`
-- [ ] Update `version` in `package.json`
-- [ ] Update `CHANGELOG.md`
-- [ ] Run `./scripts/generate-icons.sh` if the icon changed
-- [ ] Commit everything, tag `vX.Y.Z`, push
-- [ ] Wait for the release workflow to complete
-- [ ] Review and publish the draft GitHub Release
-- [ ] Update `docs/homebrew/md-opener.rb` with new version + SHA256
+## 10. Release Checklist Summary
+
+- [ ] `src-tauri/tauri.conf.json` version bumped
+- [ ] `src-tauri/Cargo.toml` version bumped
+- [ ] `package.json` version bumped
+- [ ] `CHANGELOG.md` updated
+- [ ] Icons regenerated (if SVG changed)
+- [ ] Version bump commit on `main`
+- [ ] Tag `vX.Y.Z` pushed — workflow fires
+- [ ] All four workflow legs green
+- [ ] GitHub Release draft reviewed and published
+- [ ] Homebrew tap cask updated (version + sha256)
+- [ ] winget manifest PR submitted to `microsoft/winget-pkgs`
+- [ ] AUR PKGBUILD updated and pushed

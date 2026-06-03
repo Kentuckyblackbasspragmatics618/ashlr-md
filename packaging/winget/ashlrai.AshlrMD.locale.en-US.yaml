@@ -1,0 +1,47 @@
+# yaml-language-server: $schema=https://aka.ms/winget-manifest.defaultLocale.1.6.0.schema.json
+#
+# Windows Package Manager (winget) — Default locale manifest (en-US)
+# Package: ashlrai.AshlrMD
+#
+# PLACEHOLDER VALUES
+#   <VERSION> — replace with the release version string, e.g. 0.2.0
+# ---------------------------------------------------------------------------
+
+PackageIdentifier: ashlrai.AshlrMD
+PackageVersion: <VERSION>
+PackageLocale: en-US
+
+Publisher: ashlrai
+PublisherUrl: "https://github.com/ashlrai"
+PublisherSupportUrl: "https://github.com/ashlrai/ashlr-md/issues"
+# PrivacyUrl: ""   # add when a privacy policy page exists
+
+Author: ashlrai
+PackageName: Ashlr MD
+PackageUrl: "https://github.com/ashlrai/ashlr-md"
+License: MIT
+LicenseUrl: "https://github.com/ashlrai/ashlr-md/blob/main/LICENSE"
+
+ShortDescription: "AI-native Markdown viewer, editor, and exporter"
+Description: >-
+  Ashlr MD is a fast, AI-native desktop application for reading, editing,
+  and exporting Markdown files. It supports all common Markdown dialects,
+  live preview, syntax highlighting, and deep-link integration for the
+  agentic era.
+
+# Moniker used for `winget install ashlr-md`
+Moniker: ashlr-md
+
+Tags:
+  - markdown
+  - editor
+  - viewer
+  - ai
+  - productivity
+  - developer-tools
+
+# ReleaseNotes and ReleaseNotesUrl are per-version — update each release
+ReleaseNotesUrl: "https://github.com/ashlrai/ashlr-md/releases/tag/v<VERSION>"
+
+ManifestType: defaultLocale
+ManifestVersion: 1.6.0

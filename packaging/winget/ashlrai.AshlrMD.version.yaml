@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=https://aka.ms/winget-manifest.version.1.6.0.schema.json
+#
+# Windows Package Manager (winget) — Version manifest
+# Package: ashlrai.AshlrMD
+#
+# PLACEHOLDER VALUES
+#   <VERSION>  — replace with the release version string, e.g. 0.2.0
+#
+# SUBMISSION
+#   Submit a PR to https://github.com/microsoft/winget-pkgs adding the three
+#   manifests under:
+#     manifests/a/ashlrai/AshlrMD/<VERSION>/
+#   Files required:
+#     ashlrai.AshlrMD.yaml                     (this file)
+#     ashlrai.AshlrMD.installer.yaml
+#     ashlrai.AshlrMD.locale.en-US.yaml
+#
+# VALIDATION (run locally before submitting)
+#   winget validate --manifest manifests/a/ashlrai/AshlrMD/<VERSION>/
+# ---------------------------------------------------------------------------
+
+PackageIdentifier: ashlrai.AshlrMD
+PackageVersion: <VERSION>
+DefaultLocale: en-US
+ManifestType: version
+ManifestVersion: 1.6.0

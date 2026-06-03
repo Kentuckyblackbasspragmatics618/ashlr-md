@@ -1,0 +1,47 @@
+[Desktop Entry]
+# ---------------------------------------------------------------------------
+# .desktop file for Ashlr MD
+#
+# INSTALL LOCATIONS
+#   System-wide (deb package installs here automatically):
+#     /usr/share/applications/app.mdopener.desktop.desktop
+#   Per-user:
+#     ~/.local/share/applications/app.mdopener.desktop.desktop
+#
+# The Tauri deb bundle generates this file automatically at build time from
+# tauri.conf.json (identifier + productName + fileAssociations). This copy
+# is the canonical source for the AUR package and manual installs.
+#
+# ICON
+#   The deb bundle installs the icon to:
+#     /usr/share/icons/hicolor/128x128/apps/app.mdopener.desktop.png
+#   The AppImage bundles the icon internally at:
+#     .DirIcon  (symlinked to app.mdopener.desktop.png)
+#   For the AUR package, icons are extracted from the deb or bundled directly.
+#
+# MIME-TYPE REGISTRATION
+#   After install, run:
+#     update-desktop-database ~/.local/share/applications   # per-user
+#     sudo update-desktop-database /usr/share/applications  # system
+#   This registers the MimeType associations below with xdg-mime.
+# ---------------------------------------------------------------------------
+
+Version=1.0
+Type=Application
+Name=Ashlr MD
+GenericName=Markdown Editor
+Comment=AI-native Markdown viewer, editor, and exporter
+# %F — pass all selected file paths as arguments (multi-file open support)
+Exec=ashlr-md %F
+Icon=app.mdopener.desktop
+Terminal=false
+StartupNotify=true
+StartupWMClass=ashlr-md
+Categories=Office;TextEditor;Utility;
+
+# File association: all common Markdown MIME types
+# xdg-open resolves .md → text/markdown → this entry
+MimeType=text/markdown;text/x-markdown;
+
+# Keywords for desktop search (GNOME Shell, KDE Krunner, etc.)
+Keywords=markdown;md;editor;viewer;ai;notes;writing;

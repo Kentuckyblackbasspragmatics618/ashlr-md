@@ -1,5 +1,6 @@
 //! Ashlr MD — Tauri application entry point.
 
+mod activity;
 mod afm;
 mod agent_setup;
 mod ai;
@@ -33,6 +34,7 @@ pub fn run() {
         .manage(ipc::DocMirror::default())
         .manage(ipc::RecentMirror::default())
         .manage(afm::AfmState::default())
+        .manage(activity::ActivityWatcher::default())
         .invoke_handler(tauri::generate_handler![
             document::read_markdown_file,
             document::write_markdown_file,
@@ -54,6 +56,9 @@ pub fn run() {
             agent_setup::connect_claude_code,
             agent_setup::connect_cursor,
             agent_setup::mcp_command_string,
+            activity::watch_directory,
+            activity::unwatch_directory,
+            activity::list_markdown_files,
         ])
         .setup(|app| {
             file_handler::buffer_cli_args(app.handle());

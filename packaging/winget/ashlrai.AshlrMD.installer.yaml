@@ -1,0 +1,46 @@
+# yaml-language-server: $schema=https://aka.ms/winget-manifest.installer.1.6.0.schema.json
+#
+# Windows Package Manager (winget) — Installer manifest
+# Package: ashlrai.AshlrMD
+#
+# PLACEHOLDER VALUES — update after each release
+#   <VERSION>         — release version string, e.g. 0.2.0
+#   <SHA256_NSIS_EXE> — SHA-256 of the NSIS .exe installer
+#                       PowerShell: Get-FileHash "Ashlr.MD_<VERSION>_x64-setup.exe" -Algorithm SHA256
+#
+# ARTIFACT NAMES (produced by tauri-action)
+#   NSIS .exe:  Ashlr.MD_<VERSION>_x64-setup.exe      ← primary
+#   MSI:        Ashlr.MD_<VERSION>_x64_en-US.msi       ← alternate
+#
+# SILENT INSTALL FLAGS
+#   NSIS (nullsoft): /S                — fully silent install
+#   NSIS uninstall:  /S               — fully silent uninstall
+# ---------------------------------------------------------------------------
+
+PackageIdentifier: ashlrai.AshlrMD
+PackageVersion: <VERSION>
+MinimumOSVersion: "10.0.17763.0"   # Windows 10 1809 — WebView2 baseline
+
+Installers:
+  - Architecture: x64
+    InstallerType: nullsoft
+    InstallerUrl: "https://github.com/ashlrai/ashlr-md/releases/download/v<VERSION>/Ashlr.MD_<VERSION>_x64-setup.exe"
+    InstallerSha256: <SHA256_NSIS_EXE>
+    InstallerLocale: en-US
+    # Silent install / uninstall switches for NSIS
+    InstallerSwitches:
+      Silent: /S
+      SilentWithProgress: /S
+    # Upgrade behaviour — replace existing install
+    UpgradeBehavior: install
+
+# File extension associations registered by the installer
+FileExtensions:
+  - md
+  - markdown
+  - mdown
+  - mkd
+  - mdx
+
+ManifestType: installer
+ManifestVersion: 1.6.0
