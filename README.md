@@ -17,8 +17,8 @@ free, private, **on-device AI** built in.
 [![Platform: macOS](https://img.shields.io/badge/platform-macOS-1a1a17.svg)](#)
 [![Built with Tauri](https://img.shields.io/badge/built%20with-Tauri%202-24c8db.svg)](https://tauri.app)
 
-[**Download**](https://github.com/ashlrai/md-opener/releases) ·
-[Website](https://github.com/ashlrai/md-opener) ·
+[**Website**](https://md-opener.vercel.app) ·
+[Download](https://github.com/ashlrai/md-opener/releases) ·
 [Contributing](./CONTRIBUTING.md) ·
 [Vision](./docs/VISION.md)
 
