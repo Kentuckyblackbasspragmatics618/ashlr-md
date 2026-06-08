@@ -6,10 +6,11 @@
  *   - Shows a DiffHunkActions strip: Copy (hunk text) + Apply (confirm → patch).
  *
  * Apply flow:
- *   1. If hunk.targetFile canonical-matches the open doc (or targetFile is null)
- *      → patch in-memory via documentStore.setContent + save.
- *   2. Otherwise → invoke("apply_file_patch", { path, find, replace }) to patch
- *      a different file on disk.
+ *   1. A hunk with no file header → patch the open document in-memory
+ *      (documentStore.setContent + save).
+ *   2. A hunk that names a file → invoke("apply_file_patch", { baseDir, target,
+ *      find, replace }); the Rust side CONFINES the write to the open document's
+ *      folder, so an agent-authored diff header can't reach an arbitrary path.
  *
  * Falls back to a plain <CodeBlock lang="diff"> when parse yields 0 hunks.
  */
@@ -41,7 +42,8 @@ function DiffHunkActions({ hunk, applied, onApplied }: DiffHunkActionsProps) {
   // ── Copy ──────────────────────────────────────────────────────────────────
 
   const handleCopy = useCallback(async () => {
-    const text = [hunk.header, hunk.find].join("\n");
+    // Copy the actual unified-diff body (+/- prefixed), not the pre-patch text.
+    const text = [hunk.header, ...buildHunkLines(hunk)].join("\n");
     try {
       await navigator.clipboard.writeText(text);
       setCopied(true);
@@ -69,17 +71,11 @@ function DiffHunkActions({ hunk, applied, onApplied }: DiffHunkActionsProps) {
       const store = useDocumentStore.getState();
       const openPath = store.path;
 
-      // Decide whether this hunk targets the open document or another file.
-      const targetsOpenDoc = (() => {
-        if (!hunk.targetFile) return true; // no header → treat as open doc
-        if (!openPath) return false;
-        // Canonical path comparison: strip leading slashes, compare tail.
-        const norm = (p: string) => p.replace(/\\/g, "/").replace(/^[ab]\//, "");
-        return norm(openPath).endsWith(norm(hunk.targetFile));
-      })();
-
-      if (targetsOpenDoc) {
-        // Patch the in-memory document.
+      // A hunk with NO file header patches the open document in-memory.
+      // A hunk that names a file is patched on disk via apply_file_patch, which
+      // CONFINES the write to the open document's folder (it can't reach an
+      // arbitrary path the agent might have put in the diff header).
+      if (!hunk.targetFile) {
         const content = store.content;
         const count = content.split(hunk.find).length - 1;
         if (count === 0) {
@@ -90,19 +86,27 @@ function DiffHunkActions({ hunk, applied, onApplied }: DiffHunkActionsProps) {
           toast.error("Patch anchor is ambiguous — include more context lines.");
           return;
         }
-        const newContent = content.replace(hunk.find, hunk.replace);
-        store.setContent(newContent);
+        store.setContent(content.replace(hunk.find, hunk.replace));
         await store.save();
         toast.success("Hunk applied");
         onApplied();
       } else {
-        // Patch an external file via Tauri command.
-        await invoke("apply_file_patch", {
-          path: hunk.targetFile,
+        if (!openPath) {
+          toast.error("Open a document first so the patch target can be located.");
+          return;
+        }
+        const sep = openPath.includes("\\") ? "\\" : "/";
+        const baseDir = openPath.slice(0, openPath.lastIndexOf(sep)) || sep;
+        // Returns the resolved absolute path it patched (or throws on confinement
+        // failure / not-found / ambiguous).
+        const resolved = await invoke<string>("apply_file_patch", {
+          baseDir,
+          target: hunk.targetFile,
           find: hunk.find,
           replace: hunk.replace,
         });
-        toast.success(`Hunk applied to ${hunk.targetFile}`);
+        const name = resolved.slice(resolved.lastIndexOf(sep) + 1);
+        toast.success(`Hunk applied to ${name}`);
         onApplied();
       }
     } catch (e) {
@@ -141,7 +145,9 @@ function DiffHunkActions({ hunk, applied, onApplied }: DiffHunkActionsProps) {
         </button>
       ) : (
         <span className="diff-confirm">
-          <span className="diff-confirm-label">Apply this hunk?</span>
+          <span className="diff-confirm-label">
+            Apply to <strong>{hunk.targetFile ?? "this document"}</strong>?
+          </span>
           <button className="diff-confirm-yes" type="button" onClick={handleConfirm}>
             Yes
           </button>

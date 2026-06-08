@@ -192,7 +192,10 @@ export function parseDiffHunks(raw: string): ParsedHunk[] {
       // Remaining pendingContext is contextAfter.
       // Trim trailing empty strings that arise from a final newline in the fixture.
       const trailingContext = [...pendingContext];
-      while (trailingContext.length > 0 && trailingContext[trailingContext.length - 1] === "") {
+      while (
+        trailingContext.length > 0 &&
+        trailingContext[trailingContext.length - 1] === ""
+      ) {
         trailingContext.pop();
       }
       contextAfter.push(...trailingContext);
