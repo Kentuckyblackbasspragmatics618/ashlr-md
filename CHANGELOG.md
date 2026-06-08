@@ -5,7 +5,25 @@ All notable changes to Ashlr MD are documented here. This project adheres to
 
 ## [0.4.1] — Unreleased
 
+### Added
+- **Paste images straight into a document.** Pasting an image from the clipboard
+  while editing saves it into an `assets/` folder next to the file and inserts a
+  relative `![](assets/…)` embed at the cursor. Works in both the source and
+  WYSIWYG editors; the write is confined to the document's own folder. Save the
+  document first (an unsaved doc has nowhere to put the image).
+- **Accessibility pass.** Real focus-trapping with focus-restore for the
+  Preferences and Export dialogs; closed side docks are now `inert` (their
+  controls leave the tab order and screen-reader tree instead of being reachable
+  while off-screen); clearer focus outlines across all themes; higher-contrast
+  muted text (notably in Sepia); and motion is calmed under
+  `prefers-reduced-motion`.
+
 ### Fixed
+- **Agent edits apply to the live document, not a stale snapshot.** An MCP
+  `edit_document`/`replace_document` that arrived within ~200 ms of you typing
+  used to run against a debounced mirror — it could miss just-typed text or
+  clobber it. The find/replace now runs against the live document, and
+  concurrent edit requests are bounded so they can't stall the agent connection.
 - **Agent IPC no longer stalls under concurrent requests.** The loopback server
   now handles requests on a small worker pool, so a slow/large response (e.g. a
   big `/content` read) can't block the agent's review polling behind it. The MCP
