@@ -22,7 +22,7 @@
 import DOMPurify from "dompurify";
 import { useDocumentStore } from "../store/documentStore";
 import { toast } from "../store/toastStore";
-import { buildStandaloneHtml } from "./export";
+import { buildStandaloneHtml, cloneWithoutInjectedChrome } from "./export";
 import { waitForElement } from "./waitForElement";
 
 /**
@@ -73,7 +73,10 @@ export function buildRichTextHtml(bodyInnerHtml: string): string {
  */
 function captureRenderedBodyHtml(): string {
   const el = document.querySelector(".markdown-body");
-  if (el) return el.innerHTML;
+  // Strip injected chrome (the review card) so the clipboard gets the document,
+  // not Ashlr's rendering overlay. The fallback below routes through
+  // buildStandaloneHtml → captureMarkdownBody, which already strips it.
+  if (el) return cloneWithoutInjectedChrome(el).innerHTML;
 
   // Fallback: reuse the export pipeline, then extract just the rendered body.
   try {

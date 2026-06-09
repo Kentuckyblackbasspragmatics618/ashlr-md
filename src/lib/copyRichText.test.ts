@@ -1,5 +1,27 @@
 import { describe, expect, it } from "vitest";
 import { wrapRichTextBody } from "./copyRichText";
+import { cloneWithoutInjectedChrome } from "./export";
+
+describe("cloneWithoutInjectedChrome", () => {
+  it("strips the injected review card but keeps document content", () => {
+    const body = document.createElement("div");
+    body.className = "markdown-body";
+    body.innerHTML =
+      '<aside class="review-card">SUMMARY</aside><h1>Real Title</h1><p>Body text</p>';
+    const cleaned = cloneWithoutInjectedChrome(body);
+    expect(cleaned.querySelector(".review-card")).toBeNull();
+    expect(cleaned.innerHTML).toContain("<h1>Real Title</h1>");
+    expect(cleaned.innerHTML).toContain("Body text");
+    // The original element is untouched (we clone, not mutate in place).
+    expect(body.querySelector(".review-card")).not.toBeNull();
+  });
+
+  it("is a no-op for a body with no injected chrome", () => {
+    const body = document.createElement("div");
+    body.innerHTML = "<h1>Doc</h1><p>x</p>";
+    expect(cloneWithoutInjectedChrome(body).innerHTML).toBe("<h1>Doc</h1><p>x</p>");
+  });
+});
 
 describe("wrapRichTextBody", () => {
   it("wraps body markup in an inline-styled div", () => {

@@ -39,6 +39,8 @@ interface ReviewSummaryCardProps {
 function useFindingAnchors(summary: ReviewSummary): Map<number, string> {
   return useMemo(() => {
     const slugger = new GithubSlugger();
+    // Keyed by source line, which is unique per finding (the parser emits at
+    // most one finding per line).
     const map = new Map<number, string>();
     for (const f of summary.findings) {
       if (!f.title) continue;

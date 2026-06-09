@@ -40,6 +40,18 @@ function currentLayoutVars(): string {
 }
 
 /**
+ * Clone an element and strip Ashlr-injected UI chrome that lives inside
+ * `.markdown-body` but is NOT part of the document — currently the review
+ * summary card. Exports and rich-text copies should contain the document, not
+ * the app's rendering overlay.
+ */
+export function cloneWithoutInjectedChrome(el: Element): Element {
+  const clone = el.cloneNode(true) as Element;
+  for (const node of clone.querySelectorAll(".review-card")) node.remove();
+  return clone;
+}
+
+/**
  * Reads the live `.markdown-body` element and returns its `outerHTML`.
  * Throws a descriptive string (shown in the dialog) when the element is
  * absent — this happens when the user is in Edit or Source view.
@@ -49,7 +61,7 @@ function captureMarkdownBody(): string {
   if (!el) {
     throw "Switch to Read view before exporting.";
   }
-  return el.outerHTML;
+  return cloneWithoutInjectedChrome(el).outerHTML;
 }
 
 /**
